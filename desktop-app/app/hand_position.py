@@ -7,7 +7,7 @@ from typing import Mapping, Sequence
 class HandPosition:
     center_pixels: tuple[float, float, float]
     relative_landmarks: tuple[tuple[float, float, float], ...]
-    orientation_degreees: tuple[float, float, float]
+    orientation_degrees: tuple[float, float, float]
 
 class HandPositionCalculator:
     PALM_INDICES = (0, 5, 9, 13, 17)
@@ -41,7 +41,7 @@ class HandPositionCalculator:
 
         relative = tuple((x - center[0], y - center[1], z - center[2]) for x, y, z in points)
 
-        orientation = self._calculate_orientation(landmarks)
+        orientation = self._calculate_orientation(points)
         return HandPosition(center, relative, orientation)
 
     def pixels_to_angles(
@@ -60,7 +60,7 @@ class HandPositionCalculator:
             "pitch": pitch,
             "roll": roll,
         }
-        return [round(self._map_to_angle(values[name], *self.input_ranges[name]), 2)
+        return [round(self._map_to_angle(values[name], *self.ranges[name]), 2)
                 for name in ("x", "y", "z", "yaw", "pitch", "roll")]
 
     @staticmethod

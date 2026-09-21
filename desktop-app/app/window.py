@@ -117,7 +117,6 @@ class Window(QWidget):
     def init_style(self):
         self.setStyleSheet("""
             QWidget { 
-                background: #0f172a; 
                 color: #e2e8f0; 
                 font-family: "Segoe UI", sans-serif; 
             }
@@ -155,7 +154,6 @@ class Window(QWidget):
 
             /* Pola tekstowe i listy rozwijane */
             QLineEdit, QComboBox {
-                background: #0f172a; 
                 border: 1px solid #334155; 
                 border-radius: 7px;
                 padding: 8px 12px; 
@@ -203,7 +201,6 @@ class Window(QWidget):
 
             /* Pole ze stanem (Status) */
             QLabel#status {
-                background: #0f172a; 
                 border: 1px solid #26344d;
                 border-radius: 7px; 
                 padding: 10px; 
@@ -213,13 +210,12 @@ class Window(QWidget):
 
             /* Wyświetlanie danych pozycji i kątów */
             QLabel#position_label, QLabel#angles_label {
-                background: #0f172a; 
                 border: 1px solid #26344d;
                 border-radius: 7px; 
-                padding: 8px 12px; 
+                padding: 4px 4px; 
                 color: #38bdf8;
                 font-family: "Consolas", "Courier New", monospace;
-                font-size: 12px;
+                font-size: 8px;
             }
 
             /* Podgląd kamery */
@@ -227,7 +223,6 @@ class Window(QWidget):
                 color: #64748b; 
                 font-size: 16px; 
                 font-weight: 500;
-                background: #0f172a;
                 border-radius: 8px;
             }
         """)
@@ -247,11 +242,8 @@ class Window(QWidget):
             return
         code = self.code_input.text().strip()
         source = self.source_combo.currentData()
-        if not code:
-            self.set_status("Please enter a session code.", "Error")
-            return
-        if not source:
-            self.set_status("Please select a video source.", "Error")
+        if not code and source == "web_camera":
+            self.set_status("Session code is required for remote camera.", "Error")
             return
         self.loading = True
         self.set_status("Connecting...", "Loading")

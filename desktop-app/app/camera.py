@@ -33,7 +33,7 @@ class Camera:
             running_mode=vision.RunningMode.VIDEO,
             num_hands=1,
             min_hand_detection_confidence=0.3,
-            min_hand_presence_confidence=0.3,
+            min_tracking_confidence=0.3,
             min_hand_presence_confidence=0.3,
         )
         self.detector = vision.HandLandmarker.create_from_options(options)
@@ -94,7 +94,7 @@ class Camera:
             cv2.line(frame, points[start], points[end], (16, 185, 129), 2)
 
         position = self.calculator.calculate_position(self.last_landmarks, width, height)
-        angles = self.calculator.calculate_angles(position, width, height)
+        angles = self.calculator.pixels_to_angles(position, width, height)
         return frame, {"position": position, "angles": angles}
 
     def close(self):
