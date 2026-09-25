@@ -7,7 +7,7 @@ from websockets.asyncio.client import connect
 
 class SessionWebSocketClient:
     def __init__(self, api_url: str | None = None):
-        self.api_url = (api_url or os.environ.get("WEBSOCKET_API_URL", "ws://localhost:8000/ws")).rstrip("/")
+        self.api_url = (api_url or os.environ.get("WEBSOCKET_API_URL", "https://websocket-inzynierka.onrender.com")).rstrip("/")
         self.connected = False
         self.last_error: str | None = None
         self._token: str | None = None
@@ -22,14 +22,14 @@ class SessionWebSocketClient:
         self._thread: threading.Thread | None = None
 
     def start(self, code: str, source: str):
-        if source not in {"local_camera", "web_camera"}:
+        if source not in {"local_camera", "remote_camera"}:
             raise ValueError(f"Invalid source: {source}")
         if self._thread and self._thread.is_alive():
             self.set_source(source)
             return
         self._code = code.strip()
-        if not self._code and source == "web_camera":
-            raise ValueError("Code is required for web_camera source.")
+        if not self._code and source == "remote_camera":
+            raise ValueError("Code is required for remote_camera source.")
         self._source = source
         self._stop_event.clear()
         self._thread = threading.Thread(target=self._thread_main, name="session-websocket", daemon=True)
@@ -43,7 +43,7 @@ class SessionWebSocketClient:
         self.connected = False
 
     def set_source(self, source: str):
-        if source not in {"local_camera", "web_camera"}:
+        if source not in {"local_camera", "remote_camera"}:
             raise ValueError(f"Invalid source: {source}")
         self._source = source
         self._put_latest(json.dumps({"type": "source", "source": source}))

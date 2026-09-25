@@ -66,12 +66,12 @@ public class WebSocketClient : MonoBehaviour
         serverUrl = GUI.TextField(new Rect(140, 55, 200, 25), serverUrl);
         GUI.Label(new Rect(40, 85, 95, 25), "Session Code");
         sessionCode = GUI.TextField(new Rect(140, 85, 200, 25), sessionCode.ToUpperInvariant(), 9);
-        GUI.enable = !connecting && !string.IsNullOrWhiteSpace(sessionCode);
+        GUI.enabled = !connecting && !string.IsNullOrWhiteSpace(sessionCode);
 
         if (GUI.Button(new Rect(135, 125, 160, 30), connecting ? "Connecting..." : "Connect"))
             ConnectWithSessionCode();
 
-        GUI.Enable = true;
+        GUI.enabled = true;
         GUI.Label(new Rect(40, 165, 95, 25), "Status");
         GUI.Label(new Rect(140, 165, 200, 25), status);
     }

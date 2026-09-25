@@ -242,7 +242,7 @@ class Window(QWidget):
             return
         code = self.code_input.text().strip()
         source = self.source_combo.currentData()
-        if not code and source == "web_camera":
+        if not code and source == "remote_camera":
             self.set_status("Session code is required for remote camera.", "Error")
             return
         self.loading = True

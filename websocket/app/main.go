@@ -539,7 +539,7 @@ func (s *Server) handlePythonMessage(session *session, data []byte) {
 	case "source":
 		var msg sourceMessage
 
-		if json.Unmarshal(data, &msg) != nil || (msg.Source != "web_camera" && msg.Source != "local_camera") {
+		if json.Unmarshal(data, &msg) != nil || (msg.Source != "remote_camera" && msg.Source != "local_camera") {
 			return
 		}
 
