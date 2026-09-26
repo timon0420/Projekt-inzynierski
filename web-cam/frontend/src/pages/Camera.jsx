@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import "../styles/camera.css"
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://websocket-inzynierka.onrender.com').replace(/\/$/, '')
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://projekt-inzynierski-3qav.onrender.com').replace(/\/$/, '')
 
 const websocketUrl = (path, token) => {
     const url = new URL(API_BASE_URL)

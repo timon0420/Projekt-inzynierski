@@ -7,7 +7,7 @@ from websockets.asyncio.client import connect
 
 class SessionWebSocketClient:
     def __init__(self, api_url: str | None = None):
-        self.api_url = (api_url or os.environ.get("WEBSOCKET_API_URL", "https://websocket-inzynierka.onrender.com")).rstrip("/")
+        self.api_url = (api_url or os.environ.get("WEBSOCKET_API_URL", "https://projekt-inzynierski-3qav.onrender.com")).rstrip("/")
         self.connected = False
         self.last_error: str | None = None
         self._token: str | None = None
