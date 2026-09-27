@@ -13,39 +13,40 @@ import (
 	"strings"
 	"sync"
 	"time"
+
 	"github.com/gorilla/websocket"
 )
 
 const (
-	roleBrowser = "browser"
-	rolePython  = "python"
-	roleUnity   = "unity"
-	maxJPEGSize = 200 * 1024
-	pairingTTL = 15 * time.Minute
-	maxSessionAge = 4 * time.Hour
-	disconnectTTL = 5 * time.Minute
-	writeWait = 5 * time.Second
-	pongWait = 70 * time.Second
-	pingPeriod = 25 * time.Second
-	minFrameInterval = 100 * time.Millisecond
+	roleBrowser         = "browser"
+	rolePython          = "python"
+	roleUnity           = "unity"
+	maxJPEGSize         = 200 * 1024
+	pairingTTL          = 15 * time.Minute
+	maxSessionAge       = 4 * time.Hour
+	disconnectTTL       = 5 * time.Minute
+	writeWait           = 5 * time.Second
+	pongWait            = 70 * time.Second
+	pingPeriod          = 25 * time.Second
+	minFrameInterval    = 100 * time.Millisecond
 	maxPairingPerMinute = 10
 )
 
 type GestureData struct {
-	Type string `json:"type"`
-	Angles []float64 `json:"angles"`
-	Timestamp float64 `json:"timestamp"`
-	Sequence uint64 `json:"sequence"`
+	Type      string    `json:"type"`
+	Angles    []float64 `json:"angles"`
+	Timestamp float64   `json:"timestamp"`
+	Sequence  uint64    `json:"sequence"`
 }
 
 type sourceMessage struct {
-	Type string `json:"type"`
+	Type   string `json:"type"`
 	Source string `json:"source"`
 }
 
 type outboundMessage struct {
 	messageType int
-	payload []byte
+	payload     []byte
 }
 
 type client struct {
@@ -54,30 +55,30 @@ type client struct {
 }
 
 type session struct {
-	ID string
-	Code string
-	CreatedAt time.Time
+	ID             string
+	Code           string
+	CreatedAt      time.Time
 	PairingExpires time.Time
-	LastAction time.Time
-	Tokens map[string]string
-	Paired map[string]bool
-	Clients map[string]*client
-	Source string
-	LastSequence uint64
+	LastAction     time.Time
+	Tokens         map[string]string
+	Paired         map[string]bool
+	Clients        map[string]*client
+	Source         string
+	LastSequence   uint64
 }
 
 type SessionManager struct {
-	mu sync.RWMutex
+	mu       sync.RWMutex
 	sessions map[string]*session
-	tokens map[string]*session
-	codes map[string]*session
+	tokens   map[string]*session
+	codes    map[string]*session
 }
 
 func newSessionManager() *SessionManager {
 	return &SessionManager{
 		sessions: make(map[string]*session),
-		tokens: make(map[string]*session),
-		codes: make(map[string]*session),
+		tokens:   make(map[string]*session),
+		codes:    make(map[string]*session),
 	}
 }
 
@@ -93,7 +94,7 @@ func (sm *SessionManager) createSession(now time.Time) (*session, string, error)
 	if err != nil {
 		return nil, "", err
 	}
-	
+
 	id, err := randomToken(18)
 	if err != nil {
 		return nil, "", err
@@ -105,11 +106,11 @@ func (sm *SessionManager) createSession(now time.Time) (*session, string, error)
 	}
 
 	session := &session{
-		ID: id,
-		Code: code,
-		CreatedAt: now,
+		ID:             id,
+		Code:           code,
+		CreatedAt:      now,
 		PairingExpires: now.Add(pairingTTL),
-		LastAction: now,
+		LastAction:     now,
 		Tokens: map[string]string{
 			roleBrowser: browserToken,
 		},
@@ -256,11 +257,11 @@ func (sm *SessionManager) cleanup(now time.Time) {
 		if now.Sub(session.CreatedAt) < maxSessionAge && (!noClients || now.Sub(session.LastAction) < disconnectTTL) {
 			continue
 		}
-		
+
 		for _, token := range session.Tokens {
 			delete(sm.tokens, token)
 		}
-		
+
 		delete(sm.codes, session.Code)
 		delete(sm.sessions, id)
 	}
@@ -311,13 +312,13 @@ func randomToken(size int) (string, error) {
 
 type rateEntry struct {
 	window time.Time
-	count int
+	count  int
 }
 
 type Server struct {
-	manager *SessionManager
+	manager  *SessionManager
 	upgrader websocket.Upgrader
-	rateMu sync.Mutex
+	rateMu   sync.Mutex
 	pairRate map[string]rateEntry
 }
 
@@ -369,7 +370,7 @@ func (s *Server) handleSessions(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusMethodNotAllowed, "method_not_allowed")
 		return
 	}
-	
+
 	session, token, err := s.manager.createSession(time.Now())
 
 	if err != nil {
@@ -381,7 +382,7 @@ func (s *Server) handleSessions(w http.ResponseWriter, r *http.Request) {
 		"code":         session.Code,
 		"browserToken": token,
 		"expiresAt":    session.PairingExpires.UTC().Format(time.RFC3339),
-	})	
+	})
 }
 
 func (s *Server) handlePair(w http.ResponseWriter, r *http.Request) {
@@ -389,17 +390,17 @@ func (s *Server) handlePair(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusMethodNotAllowed, "method_not_allowed")
 		return
 	}
-	
+
 	if !s.allowPair(r) {
 		writeError(w, http.StatusTooManyRequests, "rate_limit_exceeded")
 		return
 	}
-	
+
 	var request struct {
 		Code string `json:"code"`
 		Role string `json:"role"`
 	}
-	
+
 	decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096))
 
 	if err := decoder.Decode(&request); err != nil {
@@ -411,7 +412,7 @@ func (s *Server) handlePair(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		status := http.StatusBadRequest
 
-		if err.Error() == "role_already_paired" {
+		if err.Error() == "Role already paired" {
 			status = http.StatusConflict
 		}
 		writeError(w, status, err.Error())
@@ -426,22 +427,22 @@ func (s *Server) handlePair(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) allowPair(r *http.Request) bool {
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
-	
+
 	if err != nil {
 		host = r.RemoteAddr
 	}
-	
+
 	now := time.Now()
-	
+
 	s.rateMu.Lock()
 	defer s.rateMu.Unlock()
-	
+
 	entry := s.pairRate[host]
-	
+
 	if now.Sub(entry.window) >= time.Minute {
 		entry = rateEntry{window: now}
 	}
-	
+
 	entry.count++
 	s.pairRate[host] = entry
 	return entry.count <= maxPairingPerMinute
@@ -565,9 +566,8 @@ func (s *Server) writePump(c *client) {
 		select {
 		case message := <-c.send:
 			_ = c.conn.SetWriteDeadline(time.Now().Add(writeWait))
-	
-			if err := c.conn.WriteMessage(message.messageType, message.payload);
-			err != nil {
+
+			if err := c.conn.WriteMessage(message.messageType, message.payload); err != nil {
 				return
 			}
 		case <-ticker.C:

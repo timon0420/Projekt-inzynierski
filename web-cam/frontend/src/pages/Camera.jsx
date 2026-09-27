@@ -45,11 +45,22 @@ export const Camera = () => {
             try {
                 const stored = sessionStorage.getItem('manipulatorSession')
                 if (stored) {
-                    const restoredSession = JSON.parse(stored)
-                    if (restoredSession?.code && restoredSession?.browserToken) {
-                        setSession(restoredSession)
-                        return restoredSession
+                    try {
+                        const restoredSession = JSON.parse(stored)
+                        const expiresAt = Date.parse(restoredSession?.expiresAt || '')
+                        if (
+                            restoredSession?.code &&
+                            restoredSession?.browserToken &&
+                            Number.isFinite(expiresAt) &&
+                            expiresAt > Date.now()
+                        ) {
+                            setSession(restoredSession)
+                            return restoredSession
+                        }
+                    } catch {
+                        // Generate a fresh session when stored data is invalid.
                     }
+                    sessionStorage.removeItem('manipulatorSession')
                 }
                 const options = {
                     method: 'POST',

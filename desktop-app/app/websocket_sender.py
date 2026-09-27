@@ -28,6 +28,7 @@ class SessionWebSocketClient:
             self.set_source(source)
             return
         self._code = code.strip()
+        self._token = None
         if not self._code and source == "remote_camera":
             raise ValueError("Code is required for remote_camera source.")
         self._source = source
@@ -96,6 +97,7 @@ class SessionWebSocketClient:
         except Exception as e:
             self.last_error = str(e)
             self.connected = False
+            print("WEBSOCKET ERROR: ", e)
 
     async def _run(self):
         delay = 1.0
@@ -128,8 +130,10 @@ class SessionWebSocketClient:
                         task.result()
             except (OSError, HTTPError, URLError, ValueError, ConnectionError) as e:
                 self.last_error = str(e)
+                print("WEBSOCKET ERROR: ", e)
             except Exception as e:
                 self.last_error = f"Unexpected error: {e}"
+                print("WEBSOCKET ERROR: ", e)
             finally:
                 self.connected = False
             if not self._stop_event.is_set():

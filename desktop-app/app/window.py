@@ -258,8 +258,8 @@ class Window(QWidget):
         source = self.source_combo.currentData()
         try:
             if self.session_client is None:
-                self.session_client = SessionWebSocketClient(self.code_input.text().strip())
-            self.session_client.start(self.code_input.text(), source)
+                self.session_client = SessionWebSocketClient()
+            self.session_client.start(self.code_input.text().strip(), source)
 
             if source == "local_camera":
                 camera_index = 0  # Default camera index
