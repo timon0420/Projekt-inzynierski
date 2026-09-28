@@ -7,7 +7,7 @@ RUN npm ci
 
 COPY frontend/ ./
 
-ARG VITE_API_BASE_URL=https://websocket-inzynierka.onrender.com
+ARG VITE_API_BASE_URL=https://projekt-inzynierski-3qav.onrender.com
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
 RUN npm run build
