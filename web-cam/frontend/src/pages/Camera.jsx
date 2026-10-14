@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import "../styles/camera.css"
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://projekt-inzynierski-3qav.onrender.com').replace(/\/$/, '')
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://test-ws-7v80.onrender.com/').replace(/\/$/, '')
 
 const websocketUrl = (path, token) => {
     const url = new URL(API_BASE_URL)
@@ -86,7 +86,7 @@ export const Camera = () => {
     useEffect(() => {
         if (!session) return undefined
 
-        const socket = new WebSocket(websocketUrl('/ws/browser', session.browserToken))
+        const socket = new WebSocket(websocketUrl('/ws/video/browser', session.browserToken))
         wsRef.current = socket
         setConnectingStatus('connecting...')
 

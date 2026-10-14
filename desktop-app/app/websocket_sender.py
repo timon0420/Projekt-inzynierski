@@ -7,7 +7,7 @@ from websockets.asyncio.client import connect
 
 class SessionWebSocketClient:
     def __init__(self, api_url: str | None = None):
-        self.api_url = (api_url or os.environ.get("WEBSOCKET_API_URL", "https://projekt-inzynierski-3qav.onrender.com")).rstrip("/")
+        self.api_url = (api_url or os.environ.get("WEBSOCKET_API_URL", "https://test-ws-7v80.onrender.com")).rstrip("/")
         self.connected = False
         self.last_error: str | None = None
         self._token: str | None = None
@@ -53,9 +53,10 @@ class SessionWebSocketClient:
         if len(angles) != 6:
             raise ValueError(f"Expected 6 angles, got {len(angles)}")
         values = [float(angle) for angle in angles]
-        if not all(0.0 <= angle <= 1.0 for angle in values):
-            raise ValueError(f"Angles must be in range [0.0, 1.0], got {values}")
+        if not all(0.0 <= angle <= 180.0 for angle in values):
+            raise ValueError(f"Angles must be in range [0.0, 180.0], got {values}")
         self._sequence += 1
+        print(f"Sending angles: {values}, sequence: {self._sequence}")
         self._put_latest(json.dumps({
             "type": "angles",
             "angles": values,
@@ -171,7 +172,7 @@ class SessionWebSocketClient:
                 detail = str(error)
             raise ConnectionError(f"Parowanie nie powiodło się: {detail}") from error
         self._token = result["token"]
-        self._websocket_path = result.get("websocketPath", "/ws/python")
+        self._websocket_path = result.get("websocketPath", "/ws/angles/python")
 
     def _create_session(self) -> None:
         request = Request(f"{self.api_url}/api/sessions", data=b"", method="POST")
