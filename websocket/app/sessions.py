@@ -142,26 +142,28 @@ class SessionManager:
             del session.clients[(channel, role)]
             session.last_action = now
 
-    def route(self, session: Session, channel: str, role: str, message: Outbound, latest: bool) -> None:
+
+    def route(self, session: Session, channel: str, role: str, message: Outbound, latest: bool) -> bool:
         target = session.clients.get((channel, role))
         if target is None:
             return False
+
         queue = target.queue
+
         if latest:
-            try:
-                queue.get_nowait(message)
-                return True
-            except asyncio.QueueFull:
-                pass
-            try:
-                queue.get_nowait()
-            except asyncio.QueueEmpty:
-                pass
+            while True:
+                try:
+                    queue.get_nowait()
+                except asyncio.QueueEmpty:
+                    break
+
+        # Dodaj wiadomość do kolejki.
         try:
             queue.put_nowait(message)
             return True
         except asyncio.QueueFull:
             return False
+
 
     def status(self, session: Session) -> str:
         py_video = (cfg.CHANNEL_VIDEO, cfg.ROLE_PYTHON) in session.clients
