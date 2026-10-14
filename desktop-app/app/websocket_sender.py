@@ -12,7 +12,8 @@ class SessionWebSocketClient:
         self.last_error: str | None = None
         self._token: str | None = None
         self.session_code: str | None = None
-        self._websocket_path = "/ws/python"
+        self._video_path = "/ws/video/python"
+        self._angles_path = "/ws/angles/python"
         self._code: str | None = None
         self._source = "local_camera"
         self._sequence = 0
@@ -108,19 +109,14 @@ class SessionWebSocketClient:
                     if not self._code:
                         await asyncio.to_thread(self._create_session)
                     await asyncio.to_thread(self._pair)
-                async with connect(
-                    self._websocket_url(),
-                    ping_interval=25,
-                    ping_timeout=20,
-                    max_size=256 * 1024,
-                    open_timeout=10,
-                ) as websocket:
+                async with self._connect(self._video_path) as video_socket, \
+                        self._connect(self._angles_path) as angles_socket:
                     self.connected = True
                     self.last_error = None
                     delay = 1.0
-                    await websocket.send(json.dumps({"type": "source", "source": self._source}))
-                    receiver = asyncio.create_task(self._receive_loop(websocket))
-                    sender = asyncio.create_task(self._send_loop(websocket))
+                    await angles_socket.send(json.dumps({"type": "source", "source": self._source}))
+                    receiver = asyncio.create_task(self._receive_loop(video_socket))
+                    sender = asyncio.create_task(self._send_loop(angles_socket))
                     done, pending = await asyncio.wait(
                         [receiver, sender],
                         return_when=asyncio.FIRST_COMPLETED,
@@ -172,7 +168,9 @@ class SessionWebSocketClient:
                 detail = str(error)
             raise ConnectionError(f"Parowanie nie powiodło się: {detail}") from error
         self._token = result["token"]
-        self._websocket_path = result.get("websocketPath", "/ws/angles/python")
+        paths = result.get("websocketPaths", {})
+        self._video_path = paths.get("video", "/ws/video/python")
+        self._angles_path = paths.get("angles", "/ws/angles/python")
 
     def _create_session(self) -> None:
         request = Request(f"{self.api_url}/api/sessions", data=b"", method="POST")
@@ -188,7 +186,16 @@ class SessionWebSocketClient:
         self._code = result["code"]
         self.session_code = self._code
 
-    def _websocket_url(self) -> str:
+    def _connect(self, path: str):
+        return connect(
+            self._websocket_url(path),
+            ping_interval=25,
+            ping_timeout=20,
+            max_size=256 * 1024,
+            open_timeout=10,
+        )
+
+    def _websocket_url(self, path: str) -> str:
         if not self._token:
             raise ConnectionError("Brak tokenu sesji.")
         parsed = urlparse(self.api_url)
@@ -196,7 +203,7 @@ class SessionWebSocketClient:
         return urlunparse((
             scheme,
             parsed.netloc,
-            self._websocket_path,
+            path,
             "",
             urlencode({"token": self._token}),
             "",
