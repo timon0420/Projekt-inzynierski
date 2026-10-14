@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import "../styles/camera.css"
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://test-ws-7v80.onrender.com/').replace(/\/$/, '')
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://test-ws-7v80.onrender.com').replace(/\/$/, '')
 
 const SESSION_STORAGE_KEY = 'manipulatorSession'
 const DEFAULT_PATHS = { video: '/ws/video/browser', angles: '/ws/angles/browser' }
