@@ -16,9 +16,9 @@
 .camera-header h1 {
   margin-bottom: 0.65rem;
   color: var(--text);
-  font-size: clamp(2rem, 4vw, 3.35rem);
-  line-height: 1.05;
-  letter-spacing: -0.045em;
+  font-size: clamp(1.9rem, 3.6vw, 2.8rem);
+  line-height: 1.1;
+  letter-spacing: -0.035em;
 }
 
 .camera-header p {
@@ -34,7 +34,7 @@
   padding: 0.72rem 0.95rem;
   border: 1px solid var(--border);
   border-radius: 999px;
-  background: rgba(17, 26, 46, 0.9);
+  background: var(--surface);
   color: var(--text-muted);
   font-size: 0.78rem;
   font-weight: 700;
@@ -55,7 +55,7 @@
 
 .connection-status--connected .connection-status__dot {
   background: var(--success);
-  box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.1), 0 0 12px rgba(52, 211, 153, 0.55);
+  box-shadow: 0 0 0 4px rgba(79, 196, 154, 0.12);
 }
 
 .connection-status--disconnected {
@@ -83,7 +83,7 @@
   padding: 1.15rem 1.4rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: rgba(17, 26, 46, 0.9);
+  background: var(--surface);
 }
 
 .session-panel > div:first-child {
@@ -100,7 +100,7 @@
 }
 
 .session-panel__code {
-  color: #93c5fd;
+  color: var(--accent);
   font-size: 1.35rem;
   letter-spacing: 0.12em;
 }
@@ -136,7 +136,7 @@
 
 .client-state.is-online i {
   background: var(--success);
-  box-shadow: 0 0 8px rgba(52, 211, 153, 0.7);
+  box-shadow: 0 0 0 3px rgba(79, 196, 154, 0.15);
 }
 
 .source-summary {
@@ -158,10 +158,10 @@
 .camera-notice {
   margin-bottom: 1.25rem;
   padding: 0.85rem;
-  border: 1px solid rgba(96, 165, 250, 0.2);
+  border: 1px solid rgba(138, 180, 240, 0.18);
   border-radius: var(--radius-sm);
-  background: rgba(37, 99, 235, 0.09);
-  color: #bfdbfe;
+  background: var(--accent-soft);
+  color: #c8daf5;
   font-size: 0.78rem;
   line-height: 1.55;
 }
@@ -170,7 +170,7 @@
 .camera-preview {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: linear-gradient(145deg, rgba(23, 35, 58, 0.95), rgba(14, 23, 40, 0.95));
+  background: var(--surface);
   box-shadow: var(--shadow);
 }
 
@@ -194,10 +194,10 @@
   height: 34px;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid rgba(96, 165, 250, 0.35);
+  border: 0;
   border-radius: 8px;
-  background: rgba(37, 99, 235, 0.12);
-  color: #93c5fd;
+  background: var(--accent-soft);
+  color: var(--accent);
   font-size: 0.7rem;
   font-weight: 800;
 }
@@ -306,9 +306,9 @@
   place-items: center;
   overflow: hidden;
   background:
-    linear-gradient(rgba(41, 55, 80, 0.18) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(41, 55, 80, 0.18) 1px, transparent 1px),
-    #09111f;
+    linear-gradient(rgba(54, 69, 92, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(54, 69, 92, 0.12) 1px, transparent 1px),
+    #0b111b;
   background-size: 36px 36px;
 }
 

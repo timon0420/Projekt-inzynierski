@@ -3,6 +3,20 @@ from dataclasses import dataclass
 import math
 from typing import Mapping, Sequence
 
+WRIST = 0
+INDEX_MCP, MIDDLE_MCP, PINKY_MCP = 5, 9, 17
+FINGER_TIPS = (8, 12, 16, 20)  # bez kciuka, którego położenie jest najmniej stabilne
+
+# Kolejność kątów wysyłanych do modelu manipulatora.
+ANGLE_NAMES = (
+    "base",        # 1 - obrót ramienia w lewo / prawo (poziome położenie dłoni)
+    "shoulder",    # 2 - pierwszy przegub góra / dół (wysokość dłoni w kadrze)
+    "elbow",       # 3 - drugi przegub góra / dół (odległość dłoni od kamery)
+    "wrist",       # 4 - trzeci przegub góra / dół (pochylenie dłoni do przodu / do tyłu)
+    "gripper_roll",  # 5 - przechył chwytaka lewo / prawo (przechył dłoni)
+    "grip",        # 6 - otwarcie chwytaka (0 = dłoń zamknięta, 180 = dłoń otwarta)
+)
+
 @dataclass(frozen=True)
 class HandPosition:
     center_pixels: tuple[float, float, float]
@@ -11,13 +25,14 @@ class HandPosition:
 
 class HandPositionCalculator:
     PALM_INDICES = (0, 5, 9, 13, 17)
+    # Zakresy wejściowe mapowane liniowo na 0-180°. Zamiana kolejności odwraca kierunek.
     DEFAULT_RANGES = {
-        "x": (0.0, 1.0),
-        "y": (1.0, 0.0), 
-        "z": (-0.25, 0.25),
-        "yaw": (-90.0, 90.0),
-        "pitch": (-90.0, 90.0),
-        "roll": (-180.0, 180.0), 
+        "base": (0.15, 0.85),         # x środka dłoni / szerokość kadru
+        "shoulder": (0.85, 0.15),     # y środka dłoni / wysokość kadru (wyżej = większy kąt)
+        "elbow": (0.06, 0.20),        # rozmiar dłoni / szerokość kadru (bliżej kamery = większy kąt)
+        "wrist": (-60.0, 60.0),       # pochylenie dłoni w stopniach
+        "gripper_roll": (-90.0, 90.0),  # przechył dłoni w stopniach
+        "grip": (1.0, 1.9),           # odległość opuszków od nadgarstka / rozmiar dłoni
     }
 
     def __init__(self, input_ranges: Mapping[str, tuple[float, float]] | None = None):
@@ -50,18 +65,37 @@ class HandPositionCalculator:
         if frame_width <= 0 or frame_height <= 0:
             raise ValueError("Wymiary obrazu muszą być dodatnie.")
 
-        x, y, z_pixels = position.center_pixels
-        yaw, pitch, roll = position.orientation_degrees
+        x, y, _ = position.center_pixels
+        _, pitch, roll = position.orientation_degrees
+        points = position.relative_landmarks
+
+        palm_size = self._palm_size(points, planar=False)
         values = {
-            "x": x / frame_width,
-            "y": y / frame_height,
-            "z": z_pixels / frame_width,
-            "yaw": yaw,
-            "pitch": pitch,
-            "roll": roll,
+            "base": x / frame_width,
+            "shoulder": y / frame_height,
+            "elbow": self._palm_size(points, planar=True) / frame_width,
+            "wrist": pitch,
+            "gripper_roll": roll,
+            "grip": self._openness(points, palm_size),
         }
-        return [round(self._map_to_angle(values[name], *self.ranges[name]), 2)
-                for name in ("x", "y", "z", "yaw", "pitch", "roll")]
+        return [round(self._map_to_angle(values[name], *self.ranges[name]), 2) for name in ANGLE_NAMES]
+
+    @staticmethod
+    def _palm_size(points: Sequence[tuple[float, float, float]], planar: bool) -> float:
+        distance = HandPositionCalculator._distance2d if planar else math.dist
+        return (distance(points[WRIST], points[MIDDLE_MCP]) + distance(points[INDEX_MCP], points[PINKY_MCP])) / 2
+
+    @staticmethod
+    def _distance2d(a: tuple[float, float, float], b: tuple[float, float, float]) -> float:
+        return math.hypot(a[0] - b[0], a[1] - b[1])
+
+    @staticmethod
+    def _openness(points: Sequence[tuple[float, float, float]], palm_size: float) -> float:
+        # Zaciśnięta pięść daje ok. 1.0, wyprostowane palce ok. 2.0 - niezależnie od odległości od kamery.
+        if palm_size < 1e-9:
+            return 0.0
+        reach = sum(math.dist(points[tip], points[WRIST]) for tip in FINGER_TIPS) / len(FINGER_TIPS)
+        return reach / palm_size
 
     @staticmethod
     def _map_to_angle(value: float, minimum: float, maximum: float) -> float:
@@ -75,7 +109,7 @@ class HandPositionCalculator:
         points: Sequence[tuple[float, float, float]]
     ) -> tuple[float, float, float]:
         wrist, index_base, middle_base, pinky_base = (
-            points[0], points[5], points[9], points[17]
+            points[WRIST], points[INDEX_MCP], points[MIDDLE_MCP], points[PINKY_MCP]
         )
         across = HandPositionCalculator._normalize(
             tuple(index_base[i] - pinky_base[i] for i in range(3))
@@ -90,7 +124,9 @@ class HandPositionCalculator:
         ))
 
         yaw = math.degrees(math.atan2(normal[0], normal[2]))
-        pitch = math.degrees(math.atan2(-normal[1], math.hypot(normal[0], normal[2])))
+        # Pochylenie: palce w stronę kamery (mniejsze z) dają dodatni kąt, niezależnie od tego, która to dłoń.
+        pitch = math.degrees(math.atan2(-forward[2], math.hypot(forward[0], forward[1])))
+        # Przechył w płaszczyźnie obrazu: 0° gdy palce wskazują w górę.
         roll = math.degrees(math.atan2(forward[0], -forward[1]))
         return yaw, pitch, roll
 

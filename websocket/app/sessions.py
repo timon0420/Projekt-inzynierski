@@ -135,6 +135,9 @@ class SessionManager:
         previous = session.clients.get((channel, role))
         session.clients[(channel, role)] = client
         session.last_action = now
+        if channel == cfg.CHANNEL_ANGLES and role == cfg.ROLE_PYTHON:
+            # Nowy klient Pythona numeruje kąty od początku.
+            session.last_sequence = 0
         return previous
 
     def unregister_client(self, session: Session, channel: str, role: str, client: Client, now: float) -> None:

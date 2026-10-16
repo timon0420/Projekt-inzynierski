@@ -3,26 +3,29 @@
 :root {
   font-family: 'Inter', 'Segoe UI', sans-serif;
   color: #e2e8f0;
-  background: #0b1120;
+  background: #0e141f;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  --background: #0b1120;
-  --surface: #111a2e;
-  --surface-raised: #17233a;
-  --surface-soft: #1d2a42;
-  --border: #293750;
-  --border-bright: #3a4b68;
-  --text: #f8fafc;
-  --text-muted: #94a3b8;
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --success: #34d399;
-  --danger: #ef4444;
-  --danger-hover: #dc2626;
+  --background: #0e141f;
+  --surface: #141c2a;
+  --surface-raised: #1a2434;
+  --surface-soft: #1f2a3c;
+  --surface-soft-alpha: rgba(31, 42, 60, 0.45);
+  --border: #263244;
+  --border-bright: #36455c;
+  --text: #f1f4f8;
+  --text-muted: #94a1b4;
+  --accent: #8ab4f0;
+  --accent-soft: rgba(138, 180, 240, 0.12);
+  --primary: #3a6fcf;
+  --primary-hover: #315fb3;
+  --success: #4fc49a;
+  --danger: #dc4c4c;
+  --danger-hover: #c53f3f;
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 22px;
-  --shadow: 0 24px 60px rgba(2, 6, 23, 0.4);
+  --shadow: 0 12px 32px rgba(3, 7, 15, 0.28);
 }
 
 * {
@@ -31,6 +34,7 @@
 
 html {
   min-width: 320px;
+  scroll-behavior: smooth;
   min-height: 100%;
   background: var(--background);
 }
@@ -40,7 +44,7 @@ body {
   min-height: 100vh;
   margin: 0;
   background:
-    radial-gradient(circle at 12% 12%, rgba(37, 99, 235, 0.12), transparent 30rem),
+    radial-gradient(ellipse at 50% -10%, rgba(80, 120, 190, 0.1), transparent 38rem),
     var(--background);
 }
 
@@ -69,7 +73,7 @@ p {
   align-items: center;
   gap: 0.55rem;
   margin-bottom: 1rem;
-  color: #60a5fa;
+  color: var(--accent);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -93,7 +97,7 @@ p {
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   color: #fff;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1;
   text-decoration: none;
   cursor: pointer;
@@ -106,20 +110,20 @@ p {
 
 .button:focus-visible,
 a:focus-visible {
-  outline: 3px solid rgba(96, 165, 250, 0.5);
+  outline: 2px solid rgba(138, 180, 240, 0.6);
   outline-offset: 3px;
 }
 
 .button:disabled {
-  color: #64748b;
-  background: #202b3d;
+  color: #6b778a;
+  background: #1f2938;
   cursor: not-allowed;
   transform: none;
 }
 
 .button--primary {
   background: var(--primary);
-  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 4px 14px rgba(58, 111, 207, 0.18);
 }
 
 .button--primary:hover {
@@ -128,7 +132,7 @@ a:focus-visible {
 
 .button--danger {
   background: var(--danger);
-  box-shadow: 0 12px 28px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 4px 14px rgba(220, 76, 76, 0.15);
 }
 
 .button--danger:hover {

@@ -1,9 +1,9 @@
-import unicorn
+import uvicorn
 
 from app import config as cfg
 
 if __name__ == '__main__':
-    unicorn.run(
+    uvicorn.run(
         "app.main:app",
         port=cfg.Settings.from_env().port,
         ws_ping_interval=cfg.PING_INTERVAL,
